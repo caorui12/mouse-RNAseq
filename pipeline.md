@@ -23,3 +23,13 @@ nohup rsem-prepare-reference --gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculu
 ```
 cd ..
 mkdir quantify && cd quantify
+
+for sample in `cat ../rawdata/sampleList.txt`
+do      
+echo $sample
+rsem-calculate-expression --paired-end -no-bam-output --bowtie2 --append-names -p 20 \
+../rawdata/"$sample"_1.fastq \
+../rawdata/"$sample"_2.fastq \
+../rawdata/mouse_reference \
+$sample 
+done
