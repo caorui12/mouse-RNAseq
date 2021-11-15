@@ -19,7 +19,7 @@ done
 ```
 nohup rsem-prepare-reference --gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.104.gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.dna.toplevel.fa --bowtie2 mouse_reference -p 40
 ```
-**quantify
+**quantify**
 ```
 cd ..
 mkdir quantify && cd quantify
@@ -33,3 +33,17 @@ rsem-calculate-expression --paired-end -no-bam-output --bowtie2 --append-names -
 ../rawdata/mouse_reference \
 $sample 
 done
+```
+**combine the matrix** 
+use trinity_script to generate transcript-level experssion matrix
+```
+~/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl --est_method RSEM --out_prefix mouse_trans ../quantify/*.isoforms.results --gene_trans_map none
+```
+
+**check the result**
+```
+ ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --compare_replicates
+ ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --CPM --prin_comp 3
+```
+[B6E18.rep_compare.pdf](https://github.com/caorui12/mouse-RNAseq/files/7536361/B6E18.rep_compare.pdf)
+[mouse_trans.isoform.counts.matrix.CPM.log2.prcomp.principal_components.pdf](https://github.com/caorui12/mouse-RNAseq/files/7536369/mouse_trans.isoform.counts.matrix.CPM.log2.prcomp.principal_components.pdf)
