@@ -54,7 +54,7 @@ Both figure show B6E18_5F is degarded, thus to be removed in the further analysi
 **DE analysis(DEseq2)**
 ```
 ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/run_DE_analysis.pl \
- --matrix mouse_trans.isoform.counts.matrix \
+--matrix mouse_trans.isoform.counts.matrix \
 --method DESeq2 \
 --samples_file samples.txt
 ```
@@ -65,10 +65,44 @@ Here I keep two documents, one is DEs from pairwise comparison, one is only sequ
 **Sequential DE analysis** 
 ```
 cd DESeq2.32273.dir(sequencial comparison)
-~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl --matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 2 
+~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
+--matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 2 
 ```
 total 1841 features identified 
 **cut the tree**
 ```
 ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/define_clusters_by_cutting_tree.pl --Ptree 60 -R diffExpr.P1e-3_C2.matrix.RData
+```
+**GO enrichment for DE analysis**
+### GO enrichmet
+```
+library(clusterProfiler)
+library(stringr)
+library(org.Mm.eg.db)
+library(DOSE)
+library(topGO)
+library(GSEABase)
+library(GO.db)
+library(ggplot2)
+setwd('~/Desktop/RNAseq_practice/second_stream/mouse_genes_level/sample_without_W/DESeq(sequential)')
+files=list.files(getwd(),pattern = "DE.subset") ## get the file_list
+for (i in 1:length(files)){
+target<-read.table(files[i], header=T, row.names=1)
+ego <- enrichGO(
+  gene  = rownames(target),
+  keyType = "ENSEMBL", 
+  ont ='ALL',
+  OrgDb   = org.Mm.eg.db,
+  pAdjustMethod = "BH",
+  pvalueCutoff  = 0.05,
+  qvalueCutoff  = 0.05,
+)
+file_name=paste(files[i],'_','GO.pdf',sep='')
+pdf(file_name)
+p<-dotplot(ego,x ='Count',label_format=10)
+print(p + scale_y_discrete(labels=function(ego) str_wrap(ego, width=40))) ##print is necessary, otherwise the figure will fail. 
+
+dev.off()
+write.table(ego, paste(file_name,'_','GO.matrix', sep=''), sep='\t', row.names = FALSE, quote = FALSE) 
+}
 ```
