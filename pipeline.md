@@ -84,27 +84,47 @@ library(topGO)
 library(GSEABase)
 library(GO.db)
 library(ggplot2)
-setwd('~/Desktop/RNAseq_practice/second_stream/mouse_genes_level/sample_without_W/DESeq(sequential)')
+
 files=list.files(getwd(),pattern = "DE.subset") ## get the file_list
 for (i in 1:length(files)){
 target<-read.table(files[i], header=T, row.names=1)
-ego <- enrichGO(
-  gene  = rownames(target),
-  keyType = "ENSEMBL", 
-  ont ='ALL',
-  OrgDb   = org.Mm.eg.db,
-  pAdjustMethod = "BH",
-  pvalueCutoff  = 0.05,
-  qvalueCutoff  = 0.05,
-)
-file_name=paste(files[i],'_','GO.pdf',sep='')
-pdf(file_name)
-p<-dotplot(ego,x ='Count',label_format=10)
-print(p + scale_y_discrete(labels=function(ego) str_wrap(ego, width=40))) ##print is necessary, otherwise the figure will fail. 
+goCC <- enrichGO(rownames(target),OrgDb = org.Mm.eg.db, ont='CC',pAdjustMethod = 'BH',pvalueCutoff = 0.05, qvalueCutoff = 0.05,keyType = 'ENSEMBL')
+goBP <- enrichGO(rownames(target),OrgDb = org.Mm.eg.db, ont='BP',pAdjustMethod = 'BH',pvalueCutoff = 0.05, qvalueCutoff = 0.05,keyType = 'ENSEMBL')
+goMF <- enrichGO(rownames(target),OrgDb = org.Mm.eg.db, ont='MF',pAdjustMethod = 'BH',pvalueCutoff = 0.05, qvalueCutoff = 0.05,keyType = 'ENSEMBL')
+ego_result_BP <- as.data.frame(goBP)
+ego_result_CC <- as.data.frame(goCC)
+ego_result_MF <- as.data.frame(goMF)
+ego <- rbind(ego_result_BP,ego_result_CC,ego_result_MF)
+write.table(ego, 'subcluster5_tmp.txt', sep='\t', row.names = FALSE, quote = FALSE) 
 
+display_number = 10 #这个数字分别代表选取的BP、CC、MF的通路条数
+ego_result_BP <- as.data.frame(goBP)[1:display_number, ]
+ego_result_CC <- as.data.frame(goCC)[1:display_number, ]
+ego_result_MF <- as.data.frame(goMF)[1:display_number, ]
+
+go_enrich_df <- data.frame(
+  ID=c(ego_result_BP$ID, ego_result_CC$ID, ego_result_MF$ID),Description=c(ego_result_BP$Description,ego_result_CC$Description,ego_result_MF$Description),
+  GeneNumber=c(ego_result_BP$Count, ego_result_CC$Count, ego_result_MF$Count),
+  type=factor(c(rep("biological process", display_number), 
+                rep("cellular component", display_number),
+                rep("molecular function", display_number)), 
+              levels=c("biological process", "cellular component","molecular function" )))
+
+go_enrich_df$type_order=factor(rev(as.integer(rownames(go_enrich_df))),labels=rev(go_enrich_df$Description))#这一步是必须的，为了让柱子按顺序显示，不至于很乱
+COLS <- c("#66C3A5", "#8DA1CB", "#FD8D62")#设定颜色
+pdf(file_name)
+p<-ggplot(data=go_enrich_df, aes(x=type_order,y=GeneNumber, fill=type)) + #横纵轴取值
+  geom_bar(stat="identity", width=0.8) + #柱状图的宽度，可以自己设置
+  scale_fill_manual(values = COLS) + ###颜色
+  coord_flip() + ##这一步是让柱状图横过来，不加的话柱状图是竖着的
+  xlab("GO term") + 
+  ylab("Gene_Number") + 
+  labs(title = paste("The Most Enriched GO Terms"))+
+  theme_bw()
+
+print(p)
 dev.off()
-write.table(ego, paste(file_name,'_','GO.matrix', sep=''), sep='\t', row.names = FALSE, quote = FALSE) 
-}
+
 ```
 
 
