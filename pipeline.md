@@ -124,7 +124,7 @@ p<-ggplot(data=go_enrich_df, aes(x=type_order,y=GeneNumber, fill=type)) + #æ¨ªçº
 
 print(p)
 dev.off()
-
+}
 ```
 
 
