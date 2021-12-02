@@ -145,7 +145,7 @@ write.table(kk, paste(files[i,],'_','KEGG.txt',sep=''), sep='\t', row.names = FA
 print(paste(files[i,],'finished',sep=' '))
 }
 ```
-
+R --slave --args file_list.txt < GO&KEGG.R
 
 ### local similarity analysis
 ```
