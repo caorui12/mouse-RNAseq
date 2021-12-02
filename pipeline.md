@@ -84,6 +84,7 @@ library(topGO)
 library(GSEABase)
 library(GO.db)
 library(ggplot2)
+library(stringr)
 input_file=commandArgs()[4]
 files<-read.csv(input_file,header=F)
 
@@ -139,7 +140,7 @@ kk <- enrichKEGG(
   qvalueCutoff  = 0.05
 )
 k<-barplot(kk,showCategory=10)
-print(k + scale_x_discrete(labels=function(x) str_wrap(x, width=50)))
+print(k + scale_y_discrete(labels=function(x) str_wrap(x, width=50)))
 dev.off()
 write.table(kk, paste(files[i,],'_','KEGG.txt',sep=''), sep='\t', row.names = FALSE, quote = FALSE) 
 print(paste(files[i,],'finished',sep=' '))
