@@ -329,16 +329,16 @@ table(datTraits$sample_stage)
     
   }
   
-  datKME=signedKME(datExpr, MEs, outputColumnName="MM.") ###计算connectivity
+  datKME=signedKME(datExpr, MEs, outputColumnName="MM.") ###calculate connectivity
   FilterGenes= abs(geneTraitSignificance$GS.stageP7)> .2 & abs(datKME$MM.turquoise)>.8
   hub_list<-dimnames(data.frame(datExpr))[[2]][FilterGenes]
-  hub_list
+  hub_list ## identify hub gene
 ### step 8
   
     # Select module
     module = "blue"
     # Select module probes
-    probes = colnames(datExpr) ## 我们例子里面的probe就是基因
+    probes = colnames(datExpr) 
     inModule = (moduleColors==module);
     modProbes = probes[inModule]; 
     head(modProbes)
@@ -364,14 +364,14 @@ table(datTraits$sample_stage)
     # Select module
     module = "yellow";
     # Select module probes
-    probes = colnames(datExpr) ## 我们例子里面的probe就是基因名
+    probes = colnames(datExpr) 
     inModule = (moduleColors==module);
     modProbes = probes[inModule]; 
-    ## 也是提取指定模块的基因名
+   
     # Select the corresponding Topological Overlap
     modTOM = TOM[inModule, inModule];
     dimnames(modTOM) = list(modProbes, modProbes)
-    ## 模块对应的基因关系矩阵 
+   
     cyt = exportNetworkToCytoscape(
       modTOM,
       edgeFile = paste("CytoscapeInput-edges-", paste(module, collapse="-"), ".txt", sep=""),
@@ -382,5 +382,16 @@ table(datTraits$sample_stage)
       nodeAttr = moduleColors[inModule]
     )
   ```
+### local similarity 
+we use ELSA (https://bitbucket.org/charade/elsa/src/master)
 
-
+```
+lsa_compute 166gene.txt 166gene.out -s 12 -d 3
+   
+lsa <- read.table('166gene.out', sep = '\t', stringsAsFactors = FALSE)
+ 
+#select Q <=0.001 
+lsa <- subset(lsa, Q <= 0.001)
+ 
+#write table for cytoscape visulization
+write.table(lsa, 'ARISA20.lsa.select.txt', row.names = FALSE, sep = '\t', quote = FALSE)
