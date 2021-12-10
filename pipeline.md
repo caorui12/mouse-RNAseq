@@ -35,7 +35,7 @@ $sample
 done
 ```
 **Combine the matrix** 
-use trinity_script to generate transcript-level experssion matrix
+use trinity_script to generate genes-level experssion matrix
 ```
 ~/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl --est_method RSEM --out_prefix mouse_trans ../quantify/*.isoforms.results --gene_trans_map none
 ```
