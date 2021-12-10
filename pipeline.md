@@ -45,11 +45,6 @@ use trinity_script to generate transcript-level experssion matrix
  ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --compare_replicates
  ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --CPM --prin_comp 3
 ```
-[B6E18.rep_compare.pdf](https://github.com/caorui12/mouse-RNAseq/files/7536361/B6E18.rep_compare.pdf)
-
-[PCA.pdf](https://github.com/caorui12/mouse-RNAseq/files/7536369/mouse_trans.isoform.counts.matrix.CPM.log2.prcomp.principal_components.pdf)
-
-Both figure show B6E18_5F is degarded, thus to be removed in the further analysis
 
 **DE analysis(DEseq2)**
 ```
@@ -387,3 +382,5 @@ table(datTraits$sample_stage)
       nodeAttr = moduleColors[inModule]
     )
   ```
+
+
