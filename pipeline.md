@@ -63,7 +63,7 @@ cd DESeq2.32273.dir(sequencial comparison)
 ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
 --matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 1 
 ```
-total 1841 features identified 
+total 3323 features identified 
 **clustering analysis**
 ```
 library(cluster)
