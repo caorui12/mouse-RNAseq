@@ -395,7 +395,7 @@ table(datTraits$sample_stage)
 ### local similarity 
 we use ELSA (https://bitbucket.org/charade/elsa/src/master)
 
-```
+ ```
 lsa_compute 166gene.txt 166gene.out -s 12 -d 3
    
 lsa <- read.table('166gene.out', sep = '\t', stringsAsFactors = FALSE)
@@ -454,4 +454,4 @@ for (i in 1:length(files)) {
   boxplot(data,col = colors()[i], pch = 4,lwd = 0.5,varwidth = T,outline = F,main=plot_label)
 }
 dev.off()
-```
+ ```
