@@ -405,9 +405,9 @@ lsa <- subset(lsa, Q <= 0.001)
  
 #write table for cytoscape visulization
 write.table(lsa, 'ARISA20.lsa.select.txt', row.names = FALSE, sep = '\t', quote = FALSE)
-
-### propotionality (validate the pearson correlation)
-
+```
+###  propotionality (validate the pearson correlation)
+refer to [propr](https://cran.r-project.org/web/packages/propr/index.html)
 ```
 library(propr)
 source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/heatmap.3.R")
