@@ -61,12 +61,95 @@ Here I keep two documents, one is DEs from pairwise comparison, one is only sequ
 ```
 cd DESeq2.32273.dir(sequencial comparison)
 ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
---matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 2 
+--matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 1 
 ```
 total 1841 features identified 
-**cut the tree**
+**clustering analysis**
 ```
-~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/define_clusters_by_cutting_tree.pl --Ptree 60 -R diffExpr.P1e-3_C2.matrix.RData
+library(cluster)
+library(highcharter)
+library(reshape2)
+library(gplots)
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/heatmap.3.R")
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/misc_rnaseq_funcs.R")
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/pairs3.R")
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/vioplot2.R")
+setwd('~/Dropbox/mouseRNAseq/145N1N2remove/DESeq2sequential/')
+### prepare data, scale data
+DF<-read.table('diffExpr.P1e-3_C1.matrix',header=T,row.names = 1) ### read the DE matrix
+DF<-DF[,-c(1,2)] ### two sample need to be removed
+data<-as.matrix(DF)
+data<-t(scale(t(data)))
+
+### prepare annotation 
+myheatcol = colorpanel(75, 'blue','white','red')
+samples_data = read.table("../sampleList.txt", header=F, check.names=F, fill=T)
+samples_data = samples_data[samples_data[,2] != '',]
+colnames(samples_data) = c('sample_name', 'replicate_name')
+sample_types = as.character(unique(samples_data[,1]))
+rep_names = as.character(samples_data[,2])
+data = data[, colnames(data) %in% rep_names, drop=F ]
+nsamples = length(sample_types)
+sample_colors = rainbow(nsamples)
+names(sample_colors) = sample_types
+sample_type_list = list()
+for (i in 1:nsamples) {
+  samples_want = samples_data[samples_data[,1]==sample_types[i], 2]
+  sample_type_list[[sample_types[i]]] = as.vector(samples_want)
+}
+sample_factoring = colnames(data)
+for (i in 1:nsamples) {
+  sample_type = sample_types[i]
+  replicates_want = sample_type_list[[sample_type]]
+  sample_factoring[ colnames(data) %in% replicates_want ] = sample_type
+}
+sampleAnnotations = matrix(ncol=ncol(data),nrow=nsamples)
+for (i in 1:nsamples) {
+  sampleAnnotations[i,] = colnames(data) %in% sample_type_list[[sample_types[i]]]
+}
+sampleAnnotations = apply(sampleAnnotations, 1:2, function(x) as.logical(x))
+sampleAnnotations = sample_matrix_to_color_assignments(sampleAnnotations, col=sample_colors)
+rownames(sampleAnnotations) = as.vector(sample_types)
+colnames(sampleAnnotations) = colnames(data)
+
+### calculate distance 
+gene_dist = dist(data, method='euclidean')
+sample_dist = dist(t(data), method='euclidean')
+hc_samples = hclust(sample_dist, method='complete')
+hc_genes<-hclust(gene_dist)
+
+
+### split the gene cluster 
+height=95 ### please specific the parameter of h (0-100)
+gene_partition_assignments <- cutree(as.hclust(hc_genes),h=height/100*max(hc_genes$height)) ### please specific the parameter of h
+write.table(gene_partition_assignments[hc_genes$order], file="clusters_fixed_P_90.heatmap.heatmap_gene_order.txt", quote=F, sep='	')
+max_cluster_count = max(gene_partition_assignments)
+partition_colors = rainbow(length(unique(gene_partition_assignments)), start=0.4, end=0.95)
+gene_colors_dframe = data.frame(clusters=gene_partition_assignments, colors=partition_colors[gene_partition_assignments])
+gene_colors = as.matrix(partition_colors[gene_partition_assignments])
+pdf(paste('diffExpr.P1e-3_C1.matrix',height,'pdf',sep = '_'))
+heatmap.3(data, dendrogram='both', Rowv=as.dendrogram(hc_genes), Colv=as.dendrogram(hc_samples), col=myheatcol, 
+          RowSideColors=gene_colors, scale="none", density.info="none", trace="none", key=TRUE, cexCol=1, margins=c(10,10))
+dev.off()
+gene_names = rownames(data)
+num_cols = length(data[1,])
+for (i in 1:max_cluster_count) {
+  partition_i = (gene_partition_assignments == i)
+  partition_data = data[partition_i,,drop=F]
+  outfile = paste("subcluster_", i, "_log2_medianCentered_fpkm.matrix", sep='')
+  write.table(partition_data, file=outfile, quote=F, sep="\t")
+}
+files = list.files(path=getwd(),pattern='fpkm.matrix')
+pdf("my_cluster_plots.pdf")
+par(mfrow=c(2,1))
+par(cex=0.6)
+par(mar=c(7,4,4,2))
+for (i in 1:length(files)) {
+  data = read.table(files[i], header=T, row.names=1)
+  plot_label = paste(files[i], ', ', length(data[,1]), " trans", sep='')
+  boxplot(data,col = unique(partition_colors)[i], pch = 4,lwd = 0.5,varwidth = T,outline = F,main=plot_label,par(las="2"))
+}
+dev.off()
 ```
 **GO enrichment for DE analysis**
 ### GO enrichmet
