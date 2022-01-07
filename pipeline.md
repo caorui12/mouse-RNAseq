@@ -152,7 +152,7 @@ for (i in 1:length(files)) {
 dev.off()
 ```
 **GO enrichment for DE analysis**
-### GO enrichmet
+### [GO enrichmet](https://github.com/caorui12/mouse-RNAseq/blob/main/GO_KEGG.R)
 ```
 R --slave --args file_list.txt < GO&KEGG.R
 ```
