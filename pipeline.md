@@ -154,76 +154,6 @@ dev.off()
 **GO enrichment for DE analysis**
 ### GO enrichmet
 ```
-### GO enrichmet
-library(clusterProfiler)
-library(org.Mm.eg.db)
-library(DOSE)
-library(topGO)
-library(GSEABase)
-library(GO.db)
-library(ggplot2)
-library(stringr)
-input_file=commandArgs()[4]
-files<-read.csv(input_file,header=F)
-
-
-for (i in 1:nrow(files)){
-print(paste('we are processing',files[i,],sep=' '))
-target<-read.table(files[i,], header=T, row.names=1,sep='\t')
-goCC <- enrichGO(rownames(target),OrgDb = org.Mm.eg.db, ont='CC',pAdjustMethod = 'BH',pvalueCutoff = 0.05, qvalueCutoff = 0.05,keyType = 'ENSEMBL')
-goBP <- enrichGO(rownames(target),OrgDb = org.Mm.eg.db, ont='BP',pAdjustMethod = 'BH',pvalueCutoff = 0.05, qvalueCutoff = 0.05,keyType = 'ENSEMBL')
-goMF <- enrichGO(rownames(target),OrgDb = org.Mm.eg.db, ont='MF',pAdjustMethod = 'BH',pvalueCutoff = 0.05, qvalueCutoff = 0.05,keyType = 'ENSEMBL')
-ego_result_BP <- as.data.frame(goBP)
-ego_result_CC <- as.data.frame(goCC)
-ego_result_MF <- as.data.frame(goMF)
-ego <- rbind(ego_result_BP,ego_result_CC,ego_result_MF)
-write.table(ego, paste(files[i,],'_','GO.txt',sep=''), sep='\t', row.names = FALSE, quote = FALSE) 
-
-display_number = 10 #这个数字分别代表选取的BP、CC、MF的通路条数
-ego_result_BP <- as.data.frame(goBP)[1:display_number, ]
-ego_result_CC <- as.data.frame(goCC)[1:display_number, ]
-ego_result_MF <- as.data.frame(goMF)[1:display_number, ]
-
-go_enrich_df <- data.frame(
-  ID=c(ego_result_BP$ID, ego_result_CC$ID, ego_result_MF$ID),Description=c(ego_result_BP$Description,ego_result_CC$Description,ego_result_MF$Description),
-  GeneNumber=c(ego_result_BP$Count, ego_result_CC$Count, ego_result_MF$Count),
-  type=factor(c(rep("biological process", display_number), 
-                rep("cellular component", display_number),
-                rep("molecular function", display_number)), 
-              levels=c("biological process", "cellular component","molecular function" )))
-
-go_enrich_df$type_order=factor(rev(as.integer(rownames(go_enrich_df))),labels=rev(go_enrich_df$Description))#这一步是必须的，为了让柱子按顺序显示，不至于很乱
-COLS <- c("#66C3A5", "#8DA1CB", "#FD8D62")#设定颜色
-pdf(paste(files[i,],'_','GO.pdf',sep=''))
-p<-ggplot(data=go_enrich_df, aes(x=type_order,y=GeneNumber, fill=type)) + #横纵轴取值
-  geom_bar(stat="identity", width=0.8) + #柱状图的宽度，可以自己设置
-  scale_fill_manual(values = COLS) + ###颜色
-  coord_flip() + ##这一步是让柱状图横过来，不加的话柱状图是竖着的
-  xlab("GO term") + 
-  ylab("Gene_Number") +
-  theme_bw()
-
-print(p + scale_x_discrete(labels=function(x) str_wrap(x, width=50)))
-dev.off()
-
-### start KEGG 
-kegg_list<-bitr(rownames(target),fromType = 'ENSEMBL', toType = 'ENTREZID',OrgDb = org.Mm.eg.db)
-gene=kegg_list$ENTREZID
-pdf(paste(files[i,],'_','KEGG.pdf',sep=''))
-kk <- enrichKEGG(
-  gene = gene,
-  organism  = 'mmu',
-  pvalueCutoff  = 0.05,
-  pAdjustMethod  = "BH",
-  qvalueCutoff  = 0.05
-)
-k<-barplot(kk,showCategory=10)
-print(k + scale_y_discrete(labels=function(x) str_wrap(x, width=50)))
-dev.off()
-write.table(kk, paste(files[i,],'_','KEGG.txt',sep=''), sep='\t', row.names = FALSE, quote = FALSE) 
-print(paste(files[i,],'finished',sep=' '))
-}
-
 R --slave --args file_list.txt < GO&KEGG.R
 ```
 
@@ -323,9 +253,6 @@ table(datTraits$sample_stage)
 ## module analysis
   modNames = substring(names(MEs), 3)
   geneModuleMembership = as.data.frame(cor(datExpr, MEs, use = "p"))
-  ## 算出每个模块跟基因的皮尔森相关系数矩阵
-  ## MEs是每个模块在每个样本里面的值
-  ## datExpr是每个基因在每个样本的表达量
   MMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))
   names(geneModuleMembership) = paste("MM", modNames, sep="")
   names(MMPvalue) = paste("p.MM", modNames, sep="")
@@ -378,8 +305,8 @@ table(datTraits$sample_stage)
     
     # Recalculate module eigengenes
     MEs = moduleEigengenes(datExpr, moduleColors)$eigengenes
-    ## 只有连续型性状才能只有计算
-    ## 这里把是否属 P7 表型这个变量0,1进行数值化
+
+ 
     P7 = as.data.frame(design[,12]);
     names(P7) = "P7"
     # Add the weight to existing module eigengenes
@@ -396,14 +323,14 @@ table(datTraits$sample_stage)
     # Plot the dendrogram
     sizeGrWindow(6,6);
     par(cex = 1.0)
-    ## 模块的进化树
+   
     png("step7-Eigengene-dendrogram-hclust.png",width = 800,height = 600)
     plotEigengeneNetworks(MET, "Eigengene dendrogram", marDendro = c(0,4,2,0),
                           plotHeatmaps = FALSE)
     dev.off()
     # Plot the heatmap matrix (note: this plot will overwrite the dendrogram plot)
     par(cex = 1.0)
-    ## 性状与模块热
+    
     
     png("step7-Eigengene-adjacency-heatmap.png",width = 800,height = 600)
     plotEigengeneNetworks(MET, "Eigengene adjacency heatmap", marHeatmap = c(3,4,2,2),
@@ -478,3 +405,53 @@ lsa <- subset(lsa, Q <= 0.001)
  
 #write table for cytoscape visulization
 write.table(lsa, 'ARISA20.lsa.select.txt', row.names = FALSE, sep = '\t', quote = FALSE)
+
+### propotionality (validate the pearson correlation)
+
+```
+library(propr)
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/heatmap.3.R")
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/misc_rnaseq_funcs.R")
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/pairs3.R")
+source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/vioplot2.R")
+setwd('~/Dropbox/mouseRNAseq/145N1N2remove/DESeq2sequential/DE_result/')
+myheatcol = colorpanel(75, 'blue','white','red')
+count_matrix<-read.table('../../mouse.coding.counts.matrix',sep='\t',row.names = 1,header=T)
+DE<-read.table('../diffExpr.P1e-3_C1.matrix',sep='\t',header=T,row.names = 1)
+DF<-count_matrix[rownames(DE),]
+DF<-DF[,-c(1,2)]
+TMM<-read.table('../diffExpr.P1e-3_C1.matrix',sep='\t',row.names = 1,header=T)
+TMM<- TMM[,-c(1,2)]
+TMM<- log2(TMM+1)
+data<-t(DF)
+rho <- propr(data, metric = "rho", symmetrize = TRUE)
+matrix<-rho@matrix
+best <- rho[">", .995]
+best <- simplify(best)
+gene_dist<- as.dist(1-abs(rho@matrix))
+hc_genes<-hclust(gene_dist)
+plot(hc_genes)
+
+gene_partition_assignments <- cutree(as.hclust(hc_genes),k=5)
+unique(gene_partition_assignments )
+max_cluster_count = max(gene_partition_assignments)
+gene_names = rownames(TMM)
+num_cols = length(TMM[1,])
+for (i in 1:max_cluster_count) {
+  partition_i = (gene_partition_assignments == i)
+  partition_data = TMM[partition_i,,drop=F]
+  outfile = paste("subcluster_", i, "_log2_medianCentered_fpkm.matrix", sep='')
+  write.table(partition_data, file=outfile, quote=F, sep="\t")
+}
+files = list.files(path=getwd(),pattern='fpkm.matrix')
+pdf("my_cluster_plots.pdf")
+par(mfrow=c(2,1))
+par(cex=0.6)
+par(mar=c(7,4,4,2))
+for (i in 1:length(files)) {
+  data = read.table(files[i], header=T, row.names=1)
+  plot_label = paste(files[i], ', ', length(data[,1]), " trans", sep='')
+  boxplot(data,col = colors()[i], pch = 4,lwd = 0.5,varwidth = T,outline = F,main=plot_label)
+}
+dev.off()
+```
