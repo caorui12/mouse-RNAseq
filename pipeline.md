@@ -63,7 +63,14 @@ cd DESeq2.32273.dir(sequencial comparison)
 ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
 --matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 1 
 ```
-total 3323 features identified 
+The DE result found some neighbor stage has very low DE gene, thus we further combine the some time point to bigger category
+**pairwise DE analysis** 
+```
+cd DESeq2.32273.dir(sequencial comparison)
+~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
+--matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../sampleList_wide_stage -P 1e-3 -C 1 
+```
+
 **clustering analysis**
 ```
 library(cluster)
