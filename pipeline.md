@@ -1,4 +1,4 @@
-**Prepare work directory and QC**
+**(1) Prepare work directory and QC
 
 ```
 cd /s3_d4/caorui/mouse_RNAseq/
@@ -8,18 +8,18 @@ ln -s ../../X201SC20123423-Z01-F004_01/raw_data/* .
 ln -s ../../X201SC20123423-Z01-F004_02/raw_data/* .
 ls > sampleList.txt ## prepare sampleList
 
-for sample in `cat sampleList2.txt`
+for sample in `cat sampleList.txt`
 do
 echo $sample
 ~/fqc.pl  adp_qual -p -f "$sample"/"$sample"_1.fq -r "$sample"/"$sample"_2.fq -o "$sample" 
 done
 
 ```
-**Build index**
+**(2) Build STAR index
 ```
-nohup rsem-prepare-reference --gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.104.gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.dna.toplevel.fa --bowtie2 mouse_reference -p 40
+nohup rsem-prepare-reference --gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.104.gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.dna.toplevel.fa --STAR mouse_reference -p 40
 ```
-**Quantify**
+**(3) using RSEM to Quantify gene expresison
 ```
 cd ..
 mkdir quantify && cd quantify
@@ -27,19 +27,24 @@ mkdir quantify && cd quantify
 for sample in `cat ../rawdata/sampleList.txt`
 do      
 echo $sample
-rsem-calculate-expression --paired-end -no-bam-output --bowtie2 --append-names -p 20 \
+rsem-calculate-expression --paired-end -no-bam-output --STAR --append-names -p 20 \
 ../rawdata/"$sample"_1.fastq \
 ../rawdata/"$sample"_2.fastq \
 ../rawdata/mouse_reference \
 $sample 
 done
 ```
-**Combine the matrix** 
-use trinity_script to generate genes-level experssion matrix
+**Combine the count matrix and TPM matrix** 
 ```
-~/trinityrnaseq-v2.12.0/util/abundance_estimates_to_matrix.pl --est_method RSEM --out_prefix mouse_trans ../quantify/*.isoforms.results --gene_trans_map none
+rsem-generate-data-matrix *gene* > mouse_trans.isoform.counts.matrix
+python TPM_extract.py *genes*>TPM.matrix
 ```
 
+**revise the gene name and leave the coding gene
+```
+join ../../genome/final_coding_gene.txt mouse_trans.isoform.counts.matrix -t $ '\t' > coding.counts.matrix
+join ../../genome/final_coding_gene.txt TPM.matrix1 -t $'\t' > coding.TPM.matrix
+```
 **Check the replicates**
 ```
  ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --compare_replicates
@@ -55,21 +60,14 @@ use trinity_script to generate genes-level experssion matrix
 ```
 these analysis obtain the pairwise comparsion of DE transcirpts
 
-Here I keep two documents, one is DEs from pairwise comparison, one is only sequential comparison(two sequential comparison is to only retain the nearby stages, e.g. E10.5 vs E11.5, E11.5 vs E12.5 etc) 
 
-**Sequential DE analysis** 
+**Extract DE genes
 ```
 cd DESeq2.32273.dir(sequencial comparison)
 ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
 --matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 1 
 ```
-The DE result found some neighbor stage has very low DE gene, thus we further combine the some time point to bigger category
-**pairwise DE analysis** 
-```
-cd DESeq2.32273.dir(sequencial comparison)
-~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
---matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../sampleList_wide_stage -P 1e-3 -C 1 
-```
+
 
 **clustering analysis**
 ```
