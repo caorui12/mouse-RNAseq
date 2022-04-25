@@ -1,5 +1,4 @@
-**(1) Prepare work directory and QC
-
+****(1) Prepare work directory and QC
 ```
 cd /s3_d4/caorui/mouse_RNAseq/
 mkdir second_stream_data/rawdata
