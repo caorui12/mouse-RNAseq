@@ -39,7 +39,7 @@ rsem-generate-data-matrix *gene* > mouse_trans.isoform.counts.matrix
 python TPM_extract.py *genes*>TPM.matrix
 ```
 
-**Revise the gene name and only keep the coding gene
+**Revise the gene name and only keep the coding gene**
 ```
 join ../../genome/final_coding_gene.txt mouse_trans.isoform.counts.matrix -t $ '\t' > coding.counts.matrix
 join ../../genome/final_coding_gene.txt TPM.matrix1 -t $'\t' > coding.TPM.matrix
@@ -60,9 +60,9 @@ join ../../genome/final_coding_gene.txt TPM.matrix1 -t $'\t' > coding.TPM.matrix
 these analysis obtain the pairwise comparsion of DE transcirpts
 
 
-**Extract DE genes
+**Extract DE genes**
 ```
-cd DESeq2.32273.dir(sequencial comparison)
+cd DESeq2.32273.dir
 ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/analyze_diff_expr.pl \
 --matrix ../mouse_trans.isoform.TMM.EXPR.matrix --samples ../samples.txt -P 1e-3 -C 1 
 ```
