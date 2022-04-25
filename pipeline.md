@@ -1,4 +1,4 @@
-****(1) Prepare work directory and QC
+**(1) Prepare work directory and QC**
 ```
 cd /s3_d4/caorui/mouse_RNAseq/
 mkdir second_stream_data/rawdata
@@ -14,11 +14,11 @@ echo $sample
 done
 
 ```
-**(2) Build STAR index
+**(2) Build STAR index**
 ```
 nohup rsem-prepare-reference --gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.104.gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.dna.toplevel.fa --STAR mouse_reference -p 40
 ```
-**(3) using RSEM to Quantify gene expresison
+**(3) using RSEM to Quantify gene expresison**
 ```
 cd ..
 mkdir quantify && cd quantify
