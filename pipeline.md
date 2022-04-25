@@ -1,4 +1,4 @@
-** (1) Prepare work directory and QC
+**(1) Prepare work directory and QC
 
 ```
 cd /s3_d4/caorui/mouse_RNAseq/
@@ -40,7 +40,7 @@ rsem-generate-data-matrix *gene* > mouse_trans.isoform.counts.matrix
 python TPM_extract.py *genes*>TPM.matrix
 ```
 
-**revise the gene name and leave the coding gene
+**Revise the gene name and only keep the coding gene
 ```
 join ../../genome/final_coding_gene.txt mouse_trans.isoform.counts.matrix -t $ '\t' > coding.counts.matrix
 join ../../genome/final_coding_gene.txt TPM.matrix1 -t $'\t' > coding.TPM.matrix
@@ -192,7 +192,6 @@ myheatcol = colorpanel(75, 'blue','white','red')
 count_matrix<-read.table('../../mouse.coding.counts.matrix',sep='\t',row.names = 1,header=T)
 DE<-read.table('../diffExpr.P1e-3_C1.matrix',sep='\t',header=T,row.names = 1)
 DF<-count_matrix[rownames(DE),]
-DF<-DF[,-c(1,2)]
 TMM<-read.table('../diffExpr.P1e-3_C1.matrix',sep='\t',row.names = 1,header=T)
 TMM<- TMM[,-c(1,2)]
 TMM<- log2(TMM+1)
