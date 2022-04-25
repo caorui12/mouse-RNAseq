@@ -81,9 +81,8 @@ source("~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/R/vioplo
 setwd('~/Dropbox/mouseRNAseq/145N1N2remove/DESeq2sequential/')
 ### prepare data, scale data
 DF<-read.table('diffExpr.P1e-3_C1.matrix',header=T,row.names = 1) ### read the DE matrix
-DF<-DF[,-c(1,2)] ### two sample need to be removed
 data<-as.matrix(DF)
-data<-t(scale(t(data)))
+data<-t(scale(t(data))) ### transfer to Z-score
 
 ### prepare annotation 
 myheatcol = colorpanel(75, 'blue','white','red')
