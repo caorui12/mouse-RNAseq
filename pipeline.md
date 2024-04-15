@@ -16,7 +16,7 @@ done
 ```
 **(2) Build STAR index**
 ```
-nohup rsem-prepare-reference --gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.104.gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.dna.toplevel.fa --STAR mouse_reference -p 40
+rsem-prepare-reference --gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.104.gtf /s3_d4/caorui/mouse_RNAseq/genome/Mus_musculus.GRCm39.dna.toplevel.fa --STAR mouse_reference -p 40
 ```
 **(3) using RSEM to Quantify gene expresison**
 ```
@@ -33,26 +33,21 @@ rsem-calculate-expression --paired-end -no-bam-output --STAR --append-names -p 2
 $sample 
 done
 ```
-**Combine the count matrix and TPM matrix** 
+**(4)Combine the count matrix and TPM matrix** 
+
 ```
 rsem-generate-data-matrix *gene* > mouse_trans.isoform.counts.matrix
 python TPM_extract.py *genes*>TPM.matrix
 ```
-
-**Revise the gene name and only keep the coding gene**
+**(5)Check the replicates**
 ```
-join ../../genome/final_coding_gene.txt mouse_trans.isoform.counts.matrix -t $ '\t' > coding.counts.matrix
-join ../../genome/final_coding_gene.txt TPM.matrix1 -t $'\t' > coding.TPM.matrix
-```
-**Check the replicates**
-```
- ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --compare_replicates
- ~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --CPM --prin_comp 3
+$trinity/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --compare_replicates
+$trinity/Analysis/DifferentialExpression/PtR -m mouse_trans.isoform.counts.matrix -s samples.txt --log2 --CPM --prin_comp 3
 ```
 
 **DE analysis(DEseq2)**
 ```
-~/Desktop/trinityrnaseq-v2.12.0/Analysis/DifferentialExpression/run_DE_analysis.pl \
+$trinity/Analysis/DifferentialExpression/run_DE_analysis.pl \
 --matrix mouse_trans.isoform.counts.matrix \
 --method DESeq2 \
 --samples_file samples.txt
