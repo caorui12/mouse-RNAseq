@@ -77,7 +77,6 @@ LocalSimilarity <- function(x, y, maxDelay=3, rankScale = FALSE){
   colnames(value)<-c('Maxscore', 'startX', 'startY', 'delay', 'length', 'PosOrNeg')
   return(value)
 }
-R --slave --args GO_list.txt < GO&KEGG.R
 ######################
 # permutationTest(x, y, numPermu=1000, maxDelay=3,scale=TRUE)
 #
@@ -136,4 +135,4 @@ maxDelay=as.integer(maxDelay)
 LSA_matrix<-main(DF = input_file,maxDelay = maxDelay)   
 write.table(LSA_matrix,'LSA_matrix',sep='\t',quote=F)
 ```
-R --slave --args 300meanTMM_DE_LSA 3 < LSA_compute.R
+
